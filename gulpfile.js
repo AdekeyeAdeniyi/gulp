@@ -3,29 +3,17 @@ const {src,dest,parallel,series,watch} = require('gulp');
 //Load Plugins
 const uglify = require('gulp-uglify');
 const sass = require('gulp-sass')(require('node-sass'));
-const autoprefixer = require('gulp-autoprefixer');
 const notify = require('gulp-notify');
-const cssnano = require('gulp-cssnano');
 const rename = require('gulp-rename');
 const imagemin = require('gulp-imagemin');
 const del = require('del');
 const sourcemaps = require('gulp-sourcemaps');
-// const jshint = require('gulp-jshint');
+const jshint = require('gulp-jshint');
 const concat = require('gulp-concat');
-// const babel = require('gulp-babel');
-const eslint = require('eslint');
-const plumber = require('gulp-plumber');
+const babel = require('gulp-babel');
+const autoprefixer = require('gulp-autoprefixer');
+const cssnano = require('gulp-cssnano');
 const browsersync = require('browser-sync').create();
-
-// Lint scripts
-function scriptsLint() {
-    return gulp
-      .src(["./assets/scripts/**/*", "./gulpfile.js"])
-      .pipe(plumber())
-      .pipe(eslint())
-      .pipe(eslint.format())
-      .pipe(eslint.failAfterError());
-}
 
 function js() {
     const source = [
@@ -33,10 +21,14 @@ function js() {
         './node_modules/jquery/dist/jquery.js',
         './node_modules/gsap/dist/gsap.js',
         './node_modules/owl.carousel/dist/owl.carousel.js',
-        './assets/scripts/script.js'
     ];
 
     return src(source)
+        .pipe(babel({
+            presets: ['@babel/preset-env']
+        }))
+        .pipe(jshint())
+        .pipe(jshint.reporter('default'))
         .pipe(concat('bundle.js'))
         .pipe(sourcemaps.init({loadMaps: true}))
         .pipe(uglify({
