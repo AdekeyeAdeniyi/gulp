@@ -15,12 +15,41 @@ const autoprefixer = require('gulp-autoprefixer');
 const cssnano = require('gulp-cssnano');
 const browsersync = require('browser-sync').create();
 
-function js() {
+
+
+function jsPlugins() {
     const source = [
-        './assets/scripts/*.js',
         './node_modules/jquery/dist/jquery.js',
         './node_modules/gsap/dist/gsap.js',
         './node_modules/owl.carousel/dist/owl.carousel.js',
+    ];
+
+    return src(source)
+        .pipe(babel({
+            presets: ['@babel/preset-env']
+        }))
+        .pipe(concat('bundle.js'))
+        .pipe(sourcemaps.init({loadMaps: true}))
+        .pipe(uglify({
+            compress: {
+                    unused: false
+                }
+            }
+        ))
+        .pipe(rename({
+            extname: '.min.js'
+        }))
+        .pipe(sourcemaps.write('./'))
+        .pipe(dest('./dists/scripts/'))
+        .pipe(notify({
+            "title": "Scripts Complete",
+            "message": "Message"
+        }))
+}
+
+function js() {
+    const source = [
+        './assets/scripts/*.js',
     ];
 
     return src(source)
@@ -115,5 +144,5 @@ function browserSync() {
 };
 
 // Tasks to define the execution of the functions simultaneously or in series
-exports.watch = parallel(clean, watchFiles, browserSync);
-exports.default = series(clean, parallel(js, css, img));
+exports.watch = parallel(clean, jsPlugins, watchFiles, browserSync);
+exports.default = series(clean, parallel(jsPlugins, js, css, img));
